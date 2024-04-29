@@ -23,16 +23,23 @@ class Document:
         if '_rev' not in self.data:
             document = self.db.get_document(self.id)
             self.data['_rev'] = document['_rev']
-        return self.db.req(self.id, 'PUT', self.db.db_name, self.data)
+        result = self.db.req(self.id, 'PUT', self.data)
+        self.data['_rev'] = result['rev']
+        return result
 
     def create(self):
-        return self.db.req(self.id, 'PUT', self.db.db_name, self.data)
+        return self.db.req(self.id, 'PUT', self.data)
 
-    def __getitem__(self, key):
-        print('getting', key)
+    def delete(self):
+        d = self.db.req(self.id, 'DELETE', None, {
+            'rev': self.data['_rev']
+        })
+        return d
+
+    def __getitem__(self, key: str):
         return self.data[key]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value):
         self.data[key] = value
 
     def __repr__(self):

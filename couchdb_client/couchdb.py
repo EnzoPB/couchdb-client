@@ -1,6 +1,6 @@
 import requests
 import json
-import uuid
+import urllib.parse
 
 from .document import Document
 
@@ -13,17 +13,22 @@ class CouchDB:
     def req(self,
             endpoint: str,
             method: str = 'GET',
-            db: str | None = None,
-            data: dict | None = None):
+            data: dict | None = None,
+            query_params: dict | None = None):
+        if query_params is not None:
+            params = '?' + urllib.parse.urlencode(query_params)
+        else:
+            params = ''
         data = requests.request(
             method,
-            self.base_url + (db+'/' if db is not None else '') + endpoint,
+            self.base_url + self.db_name + '/' + endpoint + params,
             json=data if data is not None else {})
+        data.raise_for_status()
         return json.loads(data.text)
 
     def get_document(self, document_id: str):
         try:
-            return Document(self, self.req(document_id, 'GET', self.db_name))
+            return Document(self, self.req(document_id, 'GET'))
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
                 return None
@@ -44,7 +49,7 @@ class CouchDB:
             data['skip'] = skip
 
         result = []
-        for doc in self.req('_find', 'POST', self.db_name, data)['docs']:
+        for doc in self.req('_find', 'POST', data)['docs']:
             result.append(Document(self, doc))
         return result
 

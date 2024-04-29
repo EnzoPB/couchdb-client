@@ -18,3 +18,8 @@ doc.update()
 
 # get the document again to the the updated data
 print(db.get_document(doc.id))
+
+# delete the document
+doc.delete()
+
+print(db.get_document(doc.id))  # should return none since the document was deleted
