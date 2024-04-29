@@ -20,7 +20,13 @@ class CouchDB:
         return json.loads(data.text)
 
     def get_document(self, document_id: str):
-        return self.req(document_id, 'GET', self.db)
+        try:
+            return self.req(document_id, 'GET', self.db)
+        except requests.exceptions.HTTPError as e:
+            if e.response.status_code == 404:
+                return None
+            else:
+                raise e
 
     def create_document(self, document: dict):
         return self.req(str(uuid.uuid4()), 'PUT', self.db, document)
