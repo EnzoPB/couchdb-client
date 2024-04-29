@@ -2,11 +2,13 @@ import requests
 import json
 import uuid
 
+from .document import Document
+
 
 class CouchDB:
     def __init__(self, username: str, password: str, db: str, host: str = 'localhost', port: int = 5984):
         self.base_url = f'http://{username}:{password}@{host}:{port}/'
-        self.db = db
+        self.db_name = db
 
     def req(self,
             endpoint: str,
@@ -21,22 +23,12 @@ class CouchDB:
 
     def get_document(self, document_id: str):
         try:
-            return self.req(document_id, 'GET', self.db)
+            return Document(self, self.req(document_id, 'GET', self.db_name))
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 404:
                 return None
             else:
                 raise e
-
-    def create_document(self, document: dict):
-        return self.req(str(uuid.uuid4()), 'PUT', self.db, document)
-
-    def update_document(self, document_id: str, new_document: dict):
-        document = self.get_document(document_id)
-        new_document['_rev'] = document['_rev']
-        if '_id' in new_document:
-            del new_document['_id']
-        return self.req(document_id, 'PUT', self.db, new_document)
 
     def find_document(self, selector: dict, fields: dict = None, sort: list = None, limit: int = None, skip: int = None):
         data = {
@@ -50,4 +42,11 @@ class CouchDB:
             data['limit'] = limit
         if skip is not None:
             data['skip'] = skip
-        return self.req('_find', 'POST', self.db, data)
+
+        result = []
+        for doc in self.req('_find', 'POST', self.db_name, data)['docs']:
+            result.append(Document(self, doc))
+        return result
+
+    def document(self, data: dict | None = None):
+        return Document(self, data)
