@@ -1,6 +1,6 @@
-import couchdb_client
+from src import couchdb_client
 
-db = couchdb_client.CouchDB('admin', 'admin', 'database')
+db = couchdb_client.CouchDB('admin', 'admin', 'mc')
 
 # create a document instance
 doc = db.document({
