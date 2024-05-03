@@ -24,4 +24,4 @@ doc.delete()
 
 print(db.get_document(doc.id))  # should return none since the document was deleted
 
-print(db.get_all_documents()[:10])  # get all the documents (only display 10 to avoid a crash...)
+print(db.get_all_documents(skip=100, limit=10))  # get 10 documents, starting from the 100th

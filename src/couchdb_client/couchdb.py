@@ -26,9 +26,17 @@ class CouchDB:
         data.raise_for_status()
         return json.loads(data.text)
 
-    def get_all_documents(self):
+    def get_all_documents(self, skip: int | None = None, limit: int | None = None):
+        params = {
+            'include_docs': True
+        }
+        if skip is not None:
+            params['skip'] = skip
+        if limit is not None:
+            params['limit'] = limit
+
         result = []
-        for doc in self.req('_all_docs?include_docs=true', 'GET')['rows']:
+        for doc in self.req('_all_docs', 'GET', query_params=params)['rows']:
             if not doc['id'].startswith('_design'):  # ignore design documents
                 result.append(Document(self, doc['doc']))
         return result
