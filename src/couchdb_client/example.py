@@ -23,3 +23,5 @@ print(db.get_document(doc.id))
 doc.delete()
 
 print(db.get_document(doc.id))  # should return none since the document was deleted
+
+print(db.get_all_documents()[:10])  # get all the documents (only display 10 to avoid a crash...)
