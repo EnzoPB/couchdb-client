@@ -6,8 +6,8 @@ from .document import Document
 
 
 class CouchDB:
-    def __init__(self, username: str, password: str, db: str, host: str = 'localhost', port: int = 5984):
-        self.base_url = f'http://{username}:{password}@{host}:{port}/'
+    def __init__(self, username: str, password: str, db: str, host: str = 'localhost', port: int = 5984, scheme: str = 'http'):
+        self.base_url = f'{scheme}://{username}:{password}@{host}:{port}/'
         self.db_name = db
 
     def req(self,
