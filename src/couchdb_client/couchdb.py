@@ -5,6 +5,10 @@ import urllib.parse
 from .document import Document
 
 
+class CouchDBException(Exception):
+    response: requests.Response
+
+
 class CouchDB:
     def __init__(self, username: str, password: str, db: str, host: str = 'localhost', port: int = 5984, scheme: str = 'http'):
         self.base_url = f'{scheme}://{username}:{password}@{host}:{port}/'
@@ -19,12 +23,17 @@ class CouchDB:
             params = '?' + urllib.parse.urlencode(query_params)
         else:
             params = ''
-        data = requests.request(
+        response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
             json=data if data is not None else {})
-        data.raise_for_status()
-        return json.loads(data.text)
+        
+        if not response.ok:
+            ex = CouchDBException(response.content)
+            ex.response = response
+            raise ex
+
+        return json.loads(response.text)
 
     def get_all_documents(self, skip: int | None = None, limit: int | None = None):
         params = {
@@ -45,7 +54,7 @@ class CouchDB:
     def get_document(self, document_id: str):
         try:
             return Document(self, self.req(document_id, 'GET'))
-        except requests.exceptions.HTTPError as e:
+        except CouchDBException as e:
             if e.response.status_code == 404:
                 return None
             else:
