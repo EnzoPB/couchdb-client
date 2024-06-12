@@ -89,7 +89,7 @@ class CouchDB:
         result = self.find_documents(selector, fields, sort, 1, skip)
         if not result:
             return None
-        return result
+        return result[0]
 
     def document(self, data: dict = None) -> Document:
         return Document(self, data)
