@@ -60,7 +60,7 @@ class CouchDB:
             else:
                 raise e
 
-    def find_document(self, selector: dict, fields: dict = None, sort: list = None, limit: int = None, skip: int = None):
+    def find_documents(self, selector: dict, fields: dict = None, sort: list = None, limit: int = None, skip: int = None):
         data = {
             'selector': selector
         }
@@ -76,6 +76,12 @@ class CouchDB:
         result = []
         for doc in self.req('_find', 'POST', data)['docs']:
             result.append(Document(self, doc))
+        return result
+
+    def find_one_document(self, selector: dict, fields: dict = None, sort: list = None, skip: int = None):
+        result = self.find_documents(selector, fields, sort, 1, skip)
+        if not result:
+            return None
         return result
 
     def document(self, data: dict | None = None):
