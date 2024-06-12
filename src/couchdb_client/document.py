@@ -36,6 +36,9 @@ class Document:
         })
         return d
 
+    def __contains__(self, item):
+        return item in self.data
+
     def __getitem__(self, key: str):
         return self.data[key]
 
