@@ -17,8 +17,8 @@ class CouchDB:
     def req(self,
             endpoint: str,
             method: str = 'GET',
-            data: dict | None = None,
-            query_params: dict | None = None):
+            data: dict = None,
+            query_params: dict = None) -> dict | list:
         if query_params is not None:
             params = '?' + urllib.parse.urlencode(query_params)
         else:
@@ -35,7 +35,7 @@ class CouchDB:
 
         return json.loads(response.text)
 
-    def get_all_documents(self, skip: int | None = None, limit: int | None = None):
+    def get_all_documents(self, skip: int = None, limit: int = None) -> list[Document]:
         params = {
             'include_docs': True
         }
@@ -51,7 +51,7 @@ class CouchDB:
         return result
 
 
-    def get_document(self, document_id: str):
+    def get_document(self, document_id: str) -> Document | None:
         try:
             return Document(self, self.req(document_id, 'GET'))
         except CouchDBException as e:
@@ -60,7 +60,14 @@ class CouchDB:
             else:
                 raise e
 
-    def find_documents(self, selector: dict, fields: dict = None, sort: list = None, limit: int = None, skip: int = None):
+    def find_documents(
+        self,
+        selector: dict,
+        fields: dict = None,
+        sort: list = None,
+        limit: int = None,
+        skip: int = None
+    ) -> list[Document]:
         data = {
             'selector': selector
         }
@@ -78,11 +85,11 @@ class CouchDB:
             result.append(Document(self, doc))
         return result
 
-    def find_one_document(self, selector: dict, fields: dict = None, sort: list = None, skip: int = None):
+    def find_one_document(self, selector: dict, fields: dict = None, sort: list = None, skip: int = None) -> Document | None:
         result = self.find_documents(selector, fields, sort, 1, skip)
         if not result:
             return None
         return result
 
-    def document(self, data: dict | None = None):
+    def document(self, data: dict = None) -> Document:
         return Document(self, data)

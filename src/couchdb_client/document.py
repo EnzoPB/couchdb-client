@@ -8,7 +8,7 @@ if typing.TYPE_CHECKING:
 class Document:
     data = {}
 
-    def __init__(self, db: 'CouchDB', data: dict | None = None):
+    def __init__(self, db: 'CouchDB', data: dict = None):
         if data is not None:
             self.data = data
 
@@ -19,7 +19,7 @@ class Document:
 
         self.db = db
 
-    def update(self):
+    def update(self) -> list | dict:
         if '_rev' not in self.data:
             document = self.db.get_document(self.id)
             self.data['_rev'] = document['_rev']
@@ -27,23 +27,22 @@ class Document:
         self.data['_rev'] = result['rev']
         return result
 
-    def create(self):
+    def create(self) -> list | dict:
         return self.db.req(self.id, 'PUT', self.data)
 
-    def delete(self):
-        d = self.db.req(self.id, 'DELETE', None, {
+    def delete(self) -> list | dict:
+        return self.db.req(self.id, 'DELETE', query_params={
             'rev': self.data['_rev']
         })
-        return d
 
-    def __contains__(self, item):
+    def __contains__(self, item: str) -> bool:
         return item in self.data
 
-    def __getitem__(self, key: str):
+    def __getitem__(self, key: str) -> any:
         return self.data[key]
 
-    def __setitem__(self, key: str, value):
+    def __setitem__(self, key: str, value: any):
         self.data[key] = value
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.data}>'
