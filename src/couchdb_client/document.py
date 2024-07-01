@@ -28,7 +28,9 @@ class Document:
         return result
 
     def create(self) -> list | dict:
-        return self.db.req(self.id, 'PUT', self.data)
+        result = self.db.req(self.id, 'PUT', self.data)
+        self.data['_rev'] = result['rev']
+        return result
 
     def delete(self) -> list | dict:
         return self.db.req(self.id, 'DELETE', query_params={
