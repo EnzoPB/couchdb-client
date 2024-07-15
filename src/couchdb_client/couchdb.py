@@ -10,8 +10,15 @@ class CouchDBException(Exception):
 
 
 class CouchDB:
-    def __init__(self, username: str, password: str, db: str, host: str = 'localhost', port: int = 5984, scheme: str = 'http'):
-        self.base_url = f'{scheme}://{username}:{password}@{host}:{port}/'
+    def __init__(self,
+                 username: str,
+                 password: str,
+                 db: str,
+                 host: str = 'localhost',
+                 port: int = 5984,
+                 scheme: str = 'http',
+                 base_path: str = ''):
+        self.base_url = f'{scheme}://{username}:{password}@{host}:{port}/{base_path}'
         self.db_name = db
 
     def req(self,
@@ -27,7 +34,7 @@ class CouchDB:
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
             json=data if data is not None else {})
-        
+
         if not response.ok:
             ex = CouchDBException(response.content)
             ex.response = response
