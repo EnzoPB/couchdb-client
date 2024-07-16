@@ -1,5 +1,5 @@
 # CouchDB Client
-A very simple [CouchDB](https://couchdb.org) Python client.
+A very simple [CouchDB](https://couchdb.apache.org) Python client.
 
 ## Installation
 `pip install couchdb-client`
