@@ -106,5 +106,16 @@ class CouchDB:
             return None
         return result[0]
 
+    def create_documents(self, documents: list[Document]) -> list[Document]:
+        docs_data = list(map(lambda d: d.data, documents))
+        result = self.req('_bulk_docs', 'POST', {'docs': docs_data})
+        return_documents = []
+        for doc in documents:
+            inserted = [d for d in result if d['id'] == doc.id][0]  # retrieve the inserted object
+            if inserted['ok']:
+                doc['_rev'] = inserted['rev']
+                return_documents.append(doc)
+        return return_documents
+
     def document(self, data: dict = None) -> Document:
         return Document(self, data)
