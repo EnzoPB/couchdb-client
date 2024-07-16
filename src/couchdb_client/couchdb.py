@@ -8,6 +8,15 @@ from .document import Document
 class CouchDBException(Exception):
     response: requests.Response
 
+    def __init__(self, message):
+        try:  # try to parse the error message
+            error_data = json.loads(message)
+            message = f'{error_data["error"]}: {error_data["reason"]}'
+        except:
+            message = f'CouchDB returned {message}'
+
+        super().__init__(message)
+
 
 class CouchDB:
     def __init__(self,
@@ -56,7 +65,6 @@ class CouchDB:
             if not doc['id'].startswith('_design'):  # ignore design documents
                 result.append(Document(self, doc['doc']))
         return result
-
 
     def get_document(self, document_id: str) -> Document | None:
         try:
