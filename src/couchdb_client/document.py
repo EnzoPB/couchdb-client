@@ -13,9 +13,7 @@ class Document:
             self.data = data
 
         if '_id' not in data:
-            self.data['_id'] = str(uuid.uuid4())
-
-        self.id = self.data['_id']
+            self.data['_id'] = uuid.uuid4().hex
 
         self.db = db
 
@@ -37,6 +35,10 @@ class Document:
             'rev': self.data['_rev']
         })
 
+    @property
+    def id(self):
+        return self.data['_id']
+
     def __contains__(self, item: str) -> bool:
         return item in self.data
 
@@ -48,3 +50,9 @@ class Document:
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} {self.data}>'
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, Document):
+            return NotImplemented
+
+        return other.data == self.data
