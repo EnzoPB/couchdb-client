@@ -4,7 +4,6 @@ import urllib.parse
 
 from .document import Document
 
-
 class CouchDBException(Exception):
     response: requests.Response
 
@@ -36,13 +35,18 @@ class CouchDB:
             data: dict = None,
             query_params: dict = None) -> dict | list:
         if query_params is not None:
+            query_params = {k: v for k, v in query_params.items() if v}  # remove None values
             params = '?' + urllib.parse.urlencode(query_params)
         else:
             params = ''
+
+        if data is not None:
+            data = {k: v for k, v in data.items() if v}  # remove None values
+
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
-            json=data if data is not None else {})
+            json=data)
 
         if not response.ok:
             ex = CouchDBException(response.content)
@@ -53,12 +57,10 @@ class CouchDB:
 
     def get_all_documents(self, skip: int = None, limit: int = None) -> list[Document]:
         params = {
-            'include_docs': True
+            'include_docs': True,
+            'skip': skip,
+            'limit': limit
         }
-        if skip is not None:
-            params['skip'] = skip
-        if limit is not None:
-            params['limit'] = limit
 
         result = []
         for doc in self.req('_all_docs', 'GET', query_params=params)['rows']:
@@ -84,16 +86,12 @@ class CouchDB:
         skip: int = None
     ) -> list[Document]:
         data = {
-            'selector': selector
+            'selector': selector,
+            'fields': field,
+            'sort': sort,
+            'limit': limit,
+            'skip': skip
         }
-        if sort is not None:
-            data['sort'] = sort
-        if fields is not None:
-            data['fields'] = fields
-        if limit is not None:
-            data['limit'] = limit
-        if skip is not None:
-            data['skip'] = skip
 
         result = []
         for doc in self.req('_find', 'POST', data)['docs']:
@@ -116,6 +114,24 @@ class CouchDB:
                 doc['_rev'] = inserted['rev']
                 return_documents.append(doc)
         return return_documents
+
+    def get_view(self,
+        design_doc: str,
+        view: str,
+        limit: int = None,
+        skip: int = None,
+        include_docs: bool = False
+    ) -> list[dict]:
+        params = {
+            'limit': limit,
+            'skip': skip,
+            'include_docs': include_docs
+        }
+        rows = self.req(f'_design/{design_doc}/_view/{view}', query_params=params)['rows']
+        if include_docs:
+            for i in range(len(rows)):
+                rows[i]['doc'] = self.document(rows[i]['doc'])
+        return rows
 
     def document(self, data: dict = None) -> Document:
         return Document(self, data)
