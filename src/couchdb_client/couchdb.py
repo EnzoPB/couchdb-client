@@ -87,7 +87,7 @@ class CouchDB:
     ) -> list[Document]:
         data = {
             'selector': selector,
-            'fields': field,
+            'fields': fields,
             'sort': sort,
             'limit': limit,
             'skip': skip
