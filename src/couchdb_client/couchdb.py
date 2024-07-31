@@ -42,11 +42,10 @@ class CouchDB:
 
         if data is not None:
             data = {k: v for k, v in data.items() if v}  # remove None values
-
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
-            json=data)
+            json=data, verify=False)
 
         if not response.ok:
             ex = CouchDBException(response.content)
@@ -118,11 +117,13 @@ class CouchDB:
     def get_view(self,
         design_doc: str,
         view: str,
+        key: str,
         limit: int = None,
         skip: int = None,
         include_docs: bool = False
     ) -> list[dict]:
         params = {
+            'key': key,
             'limit': limit,
             'skip': skip,
             'include_docs': include_docs
