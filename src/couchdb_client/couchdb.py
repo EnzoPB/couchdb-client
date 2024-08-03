@@ -117,7 +117,7 @@ class CouchDB:
     def get_view(self,
         design_doc: str,
         view: str,
-        key: str,
+        key: str = None,
         limit: int = None,
         skip: int = None,
         include_docs: bool = False
