@@ -42,6 +42,7 @@ class CouchDB:
 
         if data is not None:
             data = {k: v for k, v in data.items() if v}  # remove None values
+        print('url:', self.base_url + self.db_name + '/' + endpoint + params)
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
@@ -117,15 +118,31 @@ class CouchDB:
     def get_view(self,
         design_doc: str,
         view: str,
-        key: str = None,
         limit: int = None,
         skip: int = None,
+        startkey: dict | list = None,
+        endkey: dict | list = None,
+        key: dict | list = None,
+        keys: list = None,
+        group: bool = None,
+        group_level: int = None,
+        reduce: bool = None,
+        sorted: bool = None,
+        descending: bool = None,
         include_docs: bool = False
     ) -> list[dict]:
         params = {
-            'key': key,
             'limit': limit,
             'skip': skip,
+            'startkey': startkey,
+            'endkey': endkey,
+            'key': key,
+            'keys': keys,
+            'group': group,
+            'group_level': group_level,
+            'reduce': reduce,
+            'sorted': sorted,
+            'descending': descending,
             'include_docs': include_docs
         }
         rows = self.req(f'_design/{design_doc}/_view/{view}', query_params=params)['rows']
