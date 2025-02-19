@@ -21,7 +21,7 @@ class CouchDB:
     def __init__(self,
                  username: str,
                  password: str,
-                 db: str,
+                 db: str = '',
                  host: str = 'localhost',
                  port: int = 5984,
                  scheme: str = 'http',
@@ -42,7 +42,6 @@ class CouchDB:
 
         if data is not None:
             data = {k: v for k, v in data.items() if v}  # remove None values
-        print('url:', self.base_url + self.db_name + '/' + endpoint + params)
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
