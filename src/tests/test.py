@@ -16,46 +16,50 @@ class TestCouchDBClient(unittest.TestCase):
 
     def test_create_document(self):
         """Test basic document creation"""
-        doc_data = {"name": "Test Document"}
+        doc_data = {'name': 'Test Document'}
         doc_in = self.client.document(doc_data)
         doc_in.create()
 
-        # Verify document exists
+        # verify if document exists
         doc_out = self.client.get_document(doc_in.id)
-        self.assertEqual(doc_out.data["name"], "Test Document")
+        self.assertEqual(doc_out.data['name'], 'Test Document')
+        
+        # check if the revision has been updated in the original doc
+        self.assertEqual(doc_in['_rev'], doc_out['_rev'])
 
     def test_get_nonexistent_document(self):
         """Test error handling for missing document"""
-        self.assertIsNone(self.client.get_document("non_existent_id"))
+        self.assertIsNone(self.client.get_document('non_existent_id'))
 
     def test_update_document(self):
         """Test document update workflow"""
-        # Create initial document
-        doc = self.client.document({"counter": 1})
+        # create initial document
+        doc = self.client.document({'counter': 1})
         doc.create()
         original_data = doc.data.copy()
 
-        # Update document
+        # update document
         doc.data['counter'] = 2
         doc.update()
 
-        self.assertNotEqual(original_data['_rev'], doc.data["_rev"])
+        # check if revision has been updated
+        self.assertNotEqual(original_data['_rev'], doc.data['_rev'])
 
-        # Verify update
+        # verify update
         updated = self.client.get_document(doc.id)
-        self.assertEqual(updated["counter"], 2)
+        self.assertEqual(updated['counter'], 2)
 
     def test_delete_document(self):
         """Test document deletion"""
-        doc = self.client.document({"toBe": "deleted"})
+        doc = self.client.document({'toBe': 'deleted'})
         doc.create()
 
-        # Delete document
+        # delete document
         doc.delete()
 
-        # Verify deletion
+        # verify deletion
         self.assertIsNone(self.client.get_document(doc.id))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

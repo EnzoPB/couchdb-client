@@ -30,7 +30,7 @@ class Attachment:
     @property
     def data(self) -> bytes:
         if self.is_stub:  # we don't have the data, fetch it from the db
-            self._data = self.document.db.req(f'{self.document.id}/{self.name}').content
+            self._data = self.document.db._req(f'{self.document.id}/{self.name}').content
         return self._data
     @data.setter
     def data(self, value: bytes):

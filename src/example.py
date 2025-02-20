@@ -1,6 +1,12 @@
 import couchdb_client
 
-db = couchdb_client.CouchDB('admin', 'admin', 'mc')
+db = couchdb_client.CouchDB('admin', 'admin', 't')
+
+with open('/tmp/out', 'wb') as f:
+    f.write(db.get_all_documents()[0].attachments[0].data)
+
+
+exit()
 
 # create a document instance
 doc = db.document({
