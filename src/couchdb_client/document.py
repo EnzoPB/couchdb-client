@@ -1,6 +1,7 @@
 import uuid
 import typing
 
+from .attachment import Attachment
 if typing.TYPE_CHECKING:
     from .couchdb import CouchDB
 
@@ -21,19 +22,28 @@ class Document:
         if '_rev' not in self.data:
             document = self.db.get_document(self.id)
             self.data['_rev'] = document['_rev']
-        result = self.db.req(self.id, 'PUT', self.data)
+        result = self.db.req_json(self.id, 'PUT', self.data)
         self.data['_rev'] = result['rev']
         return result
 
     def create(self) -> list | dict:
-        result = self.db.req(self.id, 'PUT', self.data)
+        result = self.db.req_json(self.id, 'PUT', self.data)
         self.data['_rev'] = result['rev']
         return result
 
     def delete(self) -> list | dict:
-        return self.db.req(self.id, 'DELETE', query_params={
+        return self.db.req_json(self.id, 'DELETE', query_params={
             'rev': self.data['_rev']
         })
+
+    @property
+    def attachments(self):
+        attachments = []
+        if '_attachments' in self.data:
+            for name in self.data['_attachments']:
+                _attachment = self.data['_attachments'][name]
+                attachments.append(Attachment.from_stub(self, name, _attachment['content_type'], _attachment['length']))
+        return attachments
 
     @property
     def id(self):

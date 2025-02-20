@@ -30,10 +30,10 @@ class CouchDB:
         self.db_name = db
 
     def req(self,
-            endpoint: str,
-            method: str = 'GET',
-            data: dict = None,
-            query_params: dict = None) -> dict | list:
+                 endpoint: str,
+                 method: str = 'GET',
+                 data: dict = None,
+                 query_params: dict = None) -> requests.Response:
         if query_params is not None:
             query_params = {k: v for k, v in query_params.items() if v}  # remove None values
             params = '?' + urllib.parse.urlencode(query_params)
@@ -52,6 +52,14 @@ class CouchDB:
             ex.response = response
             raise ex
 
+        return response
+
+    def req_json(self,
+                 endpoint: str,
+                 method: str = 'GET',
+                 data: dict = None,
+                 query_params: dict = None) -> dict | list:
+        response = self.req(endpoint, method, data, query_params)
         return json.loads(response.text)
 
     def get_all_documents(self, skip: int = None, limit: int = None) -> list[Document]:
@@ -62,14 +70,14 @@ class CouchDB:
         }
 
         result = []
-        for doc in self.req('_all_docs', 'GET', query_params=params)['rows']:
+        for doc in self.req_json('_all_docs', 'GET', query_params=params)['rows']:
             if not doc['id'].startswith('_design'):  # ignore design documents
                 result.append(Document(self, doc['doc']))
         return result
 
     def get_document(self, document_id: str) -> Document | None:
         try:
-            return Document(self, self.req(document_id, 'GET'))
+            return Document(self, self.req_json(document_id, 'GET'))
         except CouchDBException as e:
             if e.response.status_code == 404:
                 return None
@@ -93,7 +101,7 @@ class CouchDB:
         }
 
         result = []
-        for doc in self.req('_find', 'POST', data)['docs']:
+        for doc in self.req_json('_find', 'POST', data)['docs']:
             result.append(Document(self, doc))
         return result
 
@@ -105,7 +113,7 @@ class CouchDB:
 
     def create_documents(self, documents: list[Document]) -> list[Document]:
         docs_data = list(map(lambda d: d.data, documents))
-        result = self.req('_bulk_docs', 'POST', {'docs': docs_data})
+        result = self.req_json('_bulk_docs', 'POST', {'docs': docs_data})
         return_documents = []
         for doc in documents:
             inserted = [d for d in result if d['id'] == doc.id][0]  # retrieve the inserted object
@@ -144,7 +152,7 @@ class CouchDB:
             'descending': descending,
             'include_docs': include_docs
         }
-        rows = self.req(f'_design/{design_doc}/_view/{view}', query_params=params)['rows']
+        rows = self.req_json(f'_design/{design_doc}/_view/{view}', query_params=params)['rows']
         if include_docs:
             for i in range(len(rows)):
                 rows[i]['doc'] = self.document(rows[i]['doc'])

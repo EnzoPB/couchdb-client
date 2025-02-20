@@ -9,10 +9,10 @@ class TestCouchDBClient(unittest.TestCase):
             password='admin',
             db='tests'
         )
-        self.client.req('', 'PUT', {'id': 'tests', 'name': 'tests'})
+        self.client.req_json('', 'PUT', {'id': 'tests', 'name': 'tests'})
 
     def tearDown(self):
-        self.client.req('', 'DELETE')
+        self.client.req_json('', 'DELETE')
 
     def test_create_document(self):
         """Test basic document creation"""
