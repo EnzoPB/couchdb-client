@@ -60,6 +60,18 @@ class TestCouchDBClient(unittest.TestCase):
         # verify deletion
         self.assertIsNone(self.client.get_document(doc.id))
 
+    def test_attachment(self):
+        """Test document attachment creation & read"""
+        doc_in = self.client.document({})
+        doc_in.create()
+
+        doc_in.add_attachment('testfile', b'1234')
+
+        doc = self.client.get_document(doc_in.id)
+        print(doc.attachments[0])
+
+        self.assertEqual(doc.attachments[0].data, b'1234')
+
 
 if __name__ == '__main__':
     unittest.main()
