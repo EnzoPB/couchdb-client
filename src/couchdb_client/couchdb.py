@@ -49,7 +49,7 @@ class CouchDB:
     def _req(self,
              endpoint: str,
              method: str = 'GET',
-             data: dict = None,
+             data: bytes = None,
              query_params: dict = None) -> requests.Response:
         """
         Makes a request to the CouchDB API, with username, password, database & URL given in the constructor
@@ -57,7 +57,7 @@ class CouchDB:
         Args:
             endpoint (str): API endpoint, URL path
             method (str): HTTP method
-            data (dict): Request body, to be serialized in json
+            data (bytes): Request body
             query_params (dict): URL query parameters
 
         Returns:
@@ -69,14 +69,11 @@ class CouchDB:
         else:
             params = ''
 
-        if data is not None:
-            data = {k: v for k, v in data.items() if v}  # remove None values
-
         # make the request
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
-            json=data, verify=False)
+            data=data, verify=False)
 
         if not response.ok:  # raise exception if response status isn't 200~
             ex = CouchDBException(response.content)
@@ -102,7 +99,9 @@ class CouchDB:
         Returns:
             dict | list: The received data
         """
-        response = self._req(endpoint, method, data, query_params)
+        if data is not None:
+            data = {k: v for k, v in data.items() if v}  # remove None values
+        response = self._req(endpoint, method, json.dumps(data).encode(), query_params)
         return json.loads(response.text)
 
     def get_all_documents(self, skip: int = None, limit: int = None) -> list[Document]:

@@ -36,13 +36,16 @@ class Document:
             'rev': self.data['_rev']
         })
 
+    def add_attachment(self, name: str, content: bytes):
+        self.db._req(f'{self.id}/{name}', 'PUT', content, {'rev': self.data['_rev']})
+
     @property
     def attachments(self):
         attachments = []
         if '_attachments' in self.data:
             for name in self.data['_attachments']:
                 _attachment = self.data['_attachments'][name]
-                attachments.append(Attachment.from_stub(self, name, _attachment['content_type'], _attachment['length']))
+                attachments.append(Attachment(self, name, _attachment['content_type'], _attachment['length']))
         return attachments
 
     @property
