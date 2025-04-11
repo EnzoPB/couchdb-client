@@ -24,9 +24,22 @@ class TestCouchDBClient(unittest.TestCase):
         # verify if document exists
         doc_out = self.client.get_document(doc_in.id)
         self.assertEqual(doc_out.data['name'], 'Test Document')
-        
+
         # check if the revision has been updated in the original doc
         self.assertEqual(doc_in['_rev'], doc_out['_rev'])
+
+    def test_create_multiple_documents(self):
+        """Test basic bulk documents creation"""
+        docs_data = [self.client.document({'name': 'Test Document', 'i': i}) for i in range(10)]
+        self.client.create_documents(docs_data)
+
+        # verify if documents exists
+        # TODO: check with ids
+        docs_out = self.client.find_documents({
+            'name': 'Test Document',
+            'i': {'$lt': 10}
+        })
+        self.assertEqual(10, len(docs_out))
 
     def test_get_nonexistent_document(self):
         """Test error handling for missing document"""
