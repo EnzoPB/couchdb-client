@@ -1,13 +1,14 @@
 import unittest
-from ..couchdb_client import CouchDB
+import uuid
+from context import couchdb_client
 
 
 class TestCouchDBClient(unittest.TestCase):
     def setUp(self):
-        self.client = CouchDB(
+        self.client = couchdb_client.CouchDB(
             username='admin',
             password='admin',
-            db='tests'
+            db=f'tests-{uuid.uuid4()}'
         )
         self.client.req_json('', 'PUT', {'id': 'tests', 'name': 'tests'})
 
