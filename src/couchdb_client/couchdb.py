@@ -73,6 +73,9 @@ class CouchDB:
         response = requests.request(
             method,
             self.base_url + self.db_name + '/' + endpoint + params,
+            headers={
+                'Content-Type': 'application/json'
+            },
             data=data, verify=False)
 
         if not response.ok:  # raise exception if response status isn't 200~
