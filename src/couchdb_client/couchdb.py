@@ -214,6 +214,27 @@ class CouchDB:
             if inserted['ok']:
                 doc['_rev'] = inserted['rev']  # update the revision id
 
+    def get_bulk_documents(self, ids: list[any]) -> list[Document | CouchDBException]:
+        """
+        Get all the documents specified in the ids list from the database
+
+        Args:
+            ids (list[any]): List of the documents ids to get
+        Returns:
+            list[Document | CouchDBException]: List of either Documents of CouchDBException for when an error has occured when getting a document
+        """
+        ids = [{'id': id} for id in ids]
+        results = self.req_json('_bulk_get', 'POST', {'docs': ids})['results']
+        returns = []
+        for result in results:
+            if 'ok' in result['docs'][0]:
+                returns.append(self.document(result['docs'][0]['ok']))
+            else:
+                exception = CouchDBException(result['docs'][0]['error']['error'])
+                exception.id = result['id']
+                returns.append(exception)
+        return returns
+
     def get_view(self,
         design_doc: str,
         view: str,

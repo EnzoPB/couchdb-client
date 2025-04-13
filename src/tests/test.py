@@ -41,6 +41,16 @@ class TestCouchDBClient(unittest.TestCase):
         })
         self.assertEqual(10, len(docs_out))
 
+    def test_get_bulk_documents(self):
+        """Test get mulitple documents at once"""
+        docs_data = [self.client.document({'name': 'Test Document', 'i': i}) for i in range(10)]
+        self.client.create_documents(docs_data)
+
+        ids = [d.id for d in docs_data]
+
+        docs_check = self.client.get_bulk_documents(ids)
+        self.assertListEqual(docs_check, docs_data)
+
     def test_get_nonexistent_document(self):
         """Test error handling for missing document"""
         self.assertIsNone(self.client.get_document('non_existent_id'))
@@ -82,7 +92,6 @@ class TestCouchDBClient(unittest.TestCase):
         doc_in.add_attachment('testfile', b'1234')
 
         doc = self.client.get_document(doc_in.id)
-        print(doc.attachments[0])
 
         self.assertEqual(doc.attachments[0].data, b'1234')
 
