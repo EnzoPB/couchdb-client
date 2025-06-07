@@ -5,7 +5,7 @@ A very simple [CouchDB](https://couchdb.apache.org) Python client.
 `pip install couchdb-client`
 
 ## Usage
-See [example.py](https://github.com/EnzoPB/couchdb-client/blob/master/src/couchdb_client/example.py)
+See [example.py](https://github.com/EnzoPB/couchdb-client/blob/master/src/example.py)
 
 ## Notes
 This is a library I made because the [IBM Cloudant SDK](https://github.com/IBM/cloudant-python-sdk) was to complex for what I needed.
