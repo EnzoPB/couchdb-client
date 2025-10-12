@@ -95,6 +95,52 @@ class TestCouchDBClient(unittest.TestCase):
 
         self.assertEqual(doc.attachments[0].data, b'1234')
 
+    def test_view(self):
+        """Test view request"""
+        # create 50 docs with a value between 0 and 50, and 50 more with a value between 50 and 100. Add a second index that will be ignored
+        docs_below_50 = [self.client.document({'value': i, 'value2': f'abc{i}', 'type': 'doc-for-testing-views'}) for i in range(0, 50)]
+        docs_above_50 = [self.client.document({'value': i, 'value2': f'abc{i}', 'type': 'doc-for-testing-views'}) for i in range(50, 100)]
+        docs_above_50_ids_inserted = [doc.id for doc in docs_above_50]
+        self.client.create_documents(docs_below_50)
+        self.client.create_documents(docs_above_50)
+
+        # view creation is not implemented yet
+        self.client.req_json('_design/test-design-doc', 'PUT', {
+            '_id': '_design/test-design-doc',
+            'views': {
+                'test_index': {
+                    'map': 'function (doc) { if (doc.type == "doc-for-testing-views") { emit([doc.value, doc.value2], null) } }'
+                }
+            },
+            'language': 'javascript'
+        })
+
+        req_above_50 = self.client.get_view('test-design-doc', 'test_index', startkey=[50], endkey=[100, {}], include_docs=True)
+        docs_above_50_ids_requested = [view['doc'].id for view in req_above_50]
+        self.assertListEqual(docs_above_50_ids_requested, docs_above_50_ids_inserted)
+
+    def test_view2(self):
+        """Test view creation"""
+        # create 50 docs with a value between 0 and 50, and 50 more with a value between 50 and 100. Add a second index that will be ignored
+        docs = [self.client.document({'value': f'abc{i}', 'type': 'doc-for-testing-views2'}) for i in range(0, 100)]
+        docs_ids_inserted = [doc.id for doc in docs]
+        self.client.create_documents(docs)
+
+        # view creation is not implemented yet
+        self.client.req_json('_design/test-design-doc', 'PUT', {
+            '_id': '_design/test-design-doc',
+            'views': {
+                'test_index2': {
+                    'map': 'function (doc) { if (doc.type == "doc-for-testing-views2") { emit(doc.value, null) } }'
+                }
+            },
+            'language': 'javascript'
+        })
+
+        req_above_50 = self.client.get_view('test-design-doc', 'test_index2', key="abc0")
+        self.assertEqual(len(req_above_50), 1)
+        self.assertEqual(req_above_50[0]['id'], docs[0].id)
+
 
 if __name__ == '__main__':
     unittest.main()
