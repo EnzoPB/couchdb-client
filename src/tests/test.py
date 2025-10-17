@@ -141,6 +141,20 @@ class TestCouchDBClient(unittest.TestCase):
         self.assertEqual(len(req_above_50), 1)
         self.assertEqual(req_above_50[0]['id'], docs[0].id)
 
+    def test_document_insert_conflict(self):
+        """Tests inserting a document that already exists (same id)"""
+        def wrap():
+            self.client.document({'_id': 'abc'}).create()
+            self.client.document({'_id': 'abc'}).create()
+        self.assertRaisesRegex(couchdb_client.couchdb.CouchDBException, r'(Document\ update\ conflict)', wrap)
+
+        def wrap():
+            self.client.create_documents([
+                self.client.document({'_id': 'abc'}),
+                self.client.document({'_id': 'abc'})
+            ])
+        self.assertRaisesRegex(couchdb_client.couchdb.CouchDBException, r'(1\ document\(s\)\ could\ not\ be\ created)', wrap)
+
 
 if __name__ == '__main__':
     unittest.main()

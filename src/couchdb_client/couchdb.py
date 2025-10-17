@@ -206,13 +206,26 @@ class CouchDB:
 
         Args:
             documents (list[Document]): A list of document objects to be inserted
+
+        Raises:
+            CouchDBException: Raised when CouchDB returned an error when inserting at least one doc. The `errors` property is a dict containing the failed documents id as key, and the error message as value
         """
         docs_data = list(map(lambda d: d.data, documents))
         result = self.req_json('_bulk_docs', 'POST', {'docs': docs_data})
+        errors = {}
         for doc in documents:
             inserted = [d for d in result if d['id'] == doc.id][0]  # retrieve the inserted object
-            if inserted['ok']:
+            if 'ok' in inserted:
                 doc['_rev'] = inserted['rev']  # update the revision id
+            else:
+                errors[doc.id] = inserted['reason']
+
+        if len(errors) > 0:
+            exc = CouchDBException(f'{len(errors)} document(s) could not be created')
+            exc.errors = errors
+            raise exc
+
+
 
     def get_bulk_documents(self, ids: list[any]) -> list[Document | CouchDBException]:
         """
